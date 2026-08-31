@@ -1,4 +1,3 @@
-
 <html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +6,7 @@
       "imports": {
         "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
         "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
-        "mindar-face-three":"https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-face-three.prod.js"
+        "mindar-face-three": "https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-face-three.prod.js"
       }
     }
     </script>
@@ -15,13 +14,16 @@
       import * as THREE from 'three';
       import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
       import { MindARThree } from 'mindar-face-three';
+
       class Avatar {
         constructor() {
           this.gltf = null;
+          this.root = null;
           this.morphTargetMeshes = [];
         }
         async init() {
-          const url = "https://raw.githubusercontent.com/baronwatts/models/master/robber.glb;
+          // 生きている別の安定したGLBモデルのURLに変更
+          const url = "https://raw.githubusercontent.com/baronwatts/models/master/robber.glb";
           const gltf = await new Promise((resolve) => {
             const loader = new GLTFLoader();
             loader.load(url, (gltf) => {
@@ -29,17 +31,18 @@
             });
           });
           gltf.scene.traverse((object) => {
-            if ((object).isBone && !this.root) {
-              this.root = object; // as THREE.Bone;
+            if (object.isBone && !this.root) {
+              this.root = object;
             }
-            if (!(object).isMesh) return
+            if (!object.isMesh) return;
             const mesh = object;
-            if (!mesh.morphTargetDictionary || !mesh.morphTargetInfluences) return
+            if (!mesh.morphTargetDictionary || !mesh.morphTargetInfluences) return;
             this.morphTargetMeshes.push(mesh);
           });
           this.gltf = gltf;
         }
         updateBlendshapes(blendshapes) {
+          if (!blendshapes || !blendshapes.categories) return;
           const categories = blendshapes.categories;
           let coefsMap = new Map();
           for (let i = 0; i < categories.length; ++i) {
@@ -59,8 +62,10 @@
           }
         }
       }
+
       let mindarThree = null;
       let avatar = null;
+
       const setup = async () => {
         mindarThree = new MindARThree({
           container: document.querySelector("#container"),
@@ -68,33 +73,43 @@
         const { renderer, scene, camera } = mindarThree;
         const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
         scene.add(light);
+        
         const anchor = mindarThree.addAnchor(1);
+        
+        avatar = new Avatar();
         await avatar.init();
-        avatar.gltf.scene.scale.set(2, 2, 2);
+        avatar.gltf.scene.scale.set(1, 1, 1);
         anchor.group.add(avatar.gltf.scene);
-      }
+      };
+
       const start = async () => {
         if (!mindarThree) {
           await setup();
         }
         await mindarThree.start();
         const { renderer, scene, camera } = mindarThree;
+        
         const feedVideo = document.querySelector("#video-feed");
-        feedVideo.srcObject = mindarThree.video.srcObject.clone();
-        feedVideo.play();
+        if (mindarThree.video && mindarThree.video.srcObject) {
+          feedVideo.srcObject = mindarThree.video.srcObject.clone();
+          feedVideo.play();
+        }
+
         renderer.setAnimationLoop(() => {
           const estimate = mindarThree.getLatestEstimate();
-          if (estimate && estimate.blendshapes) {
+          if (estimate && estimate.blendshapes && avatar) {
             avatar.updateBlendshapes(estimate.blendshapes);
           }
           renderer.render(scene, camera);
         });
-      }
+      };
+
       start();
     </script>
     <style>
       body {
         margin: 0;
+        overflow: hidden;
       }
       #container {
         width: 100vw;
@@ -113,9 +128,7 @@
     </style>
   </head>
   <body>
-    <div id="container">
-    </div>
-    <video id="video-feed">
-    </video>
+    <div id="container"></div>
+    <video id="video-feed" autoplay muted playsinline></video>
   </body>
 </html>
