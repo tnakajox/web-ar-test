@@ -22,7 +22,6 @@
           this.morphTargetMeshes = [];
         }
         async init() {
-          // 生きている別の安定したGLBモデルのURLに変更
           const url = "./scene.gltf";
           const gltf = await new Promise((resolve) => {
             const loader = new GLTFLoader();
@@ -88,12 +87,6 @@
         }
         await mindarThree.start();
         const { renderer, scene, camera } = mindarThree;
-        
-        const feedVideo = document.querySelector("#video-feed");
-        if (mindarThree.video && mindarThree.video.srcObject) {
-          feedVideo.srcObject = mindarThree.video.srcObject.clone();
-          feedVideo.play();
-        }
 
         renderer.setAnimationLoop(() => {
           const estimate = mindarThree.getLatestEstimate();
@@ -117,18 +110,9 @@
         position: relative;
         overflow: hidden;
       }
-      #video-feed {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 50vw;
-        z-index: 9999999;
-        transform: scaleX(-1);
-      }
     </style>
   </head>
   <body>
     <div id="container"></div>
-
   </body>
 </html>
