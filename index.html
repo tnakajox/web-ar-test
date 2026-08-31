@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>簡単WebARリンク付き</title>
+    <!-- A-Frame と MindAR のライブラリ読み込み -->
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+  </head>
+  <body style="margin: 0; overflow: hidden">
+    <a-scene
+      mindar-image="imageTargetSrc: https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/examples/image-tracking/assets/card-example/card.mind;"
+      color-space="sRGB"
+      renderer="colorManagement: true, physicallyCorrectLights"
+      vr-mode-ui="enabled: false"
+      device-orientation-permission-ui="enabled: false"
+    >
+      <a-assets>
+        <!-- リンクを開くためのJavaScript（コンポーネント）の定義 -->
+        <script>
+          AFRAME.registerComponent("link-click", {
+            schema: { url: { type: "string", default: "" } },
+            init: function () {
+              var data = this.data;
+              this.el.addEventListener("click", function () {
+                window.location.href = data.url;
+              });
+            },
+          });
+        </script>
+      </a-assets>
+
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+      <!-- マーカー（サンプルとしてMindAR公式のカード画像を使用）を認識したときの処理 -->
+      <a-entity mindar-image-target="targetIndex: 0">
+        <!-- 3Dの物体（赤色の箱）。クリックすると指定したURLにジャンプする -->
+        <a-box
+          position="0 0.4 0"
+          scale="0.5 0.5 0.5"
+          material="color: #ff3333; opacity: 0.8;"
+          class="clickable"
+          link-click="url: https://example.com"
+        >
+        </a-box>
+      </a-entity>
+    </a-scene>
+
+    <!-- スマホでのクリック/タップを有効にするための設定 -->
+    <script>
+      document.querySelector("a-scene").addEventListener("loaded", function () {
+        const cameraEl = document.querySelector("[camera]");
+        cameraEl.setAttribute("cursor", "fuse: false; rayOrigin: mouse;");
+        cameraEl.setAttribute("raycaster", "objects: .clickable");
+      });
+    </script>
+  </body>
+</html>
