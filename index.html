@@ -23,7 +23,7 @@
         }
         async init() {
           // 生きている別の安定したGLBモデルのURLに変更
-          const url = "https://threejs.org/examples/models/gltf/DamagedHelmet/glTF/DamagedHelmet.gltf";
+          const url = "https://raw.githubusercontent.com/mrdoob/three.js/master/examples/models/gltf/Soldier.gltf";
           const gltf = await new Promise((resolve) => {
             const loader = new GLTFLoader();
             loader.load(url, (gltf) => {
@@ -129,6 +129,6 @@
   </head>
   <body>
     <div id="container"></div>
-    <video id="video-feed" autoplay muted playsinline></video>
+
   </body>
 </html>
