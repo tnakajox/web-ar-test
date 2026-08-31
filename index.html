@@ -23,7 +23,7 @@
         }
         async init() {
           // 生きている別の安定したGLBモデルのURLに変更
-          const url = "https://raw.githubusercontent.com/baronwatts/models/master/robber.glb";
+          const url = "https://threejs.org/examples/models/gltf/DamagedHelmet/glTF/DamagedHelmet.gltf";
           const gltf = await new Promise((resolve) => {
             const loader = new GLTFLoader();
             loader.load(url, (gltf) => {
