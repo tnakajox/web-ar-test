@@ -23,7 +23,7 @@
         }
         async init() {
           // 生きている別の安定したGLBモデルのURLに変更
-          const url = "https://threejs.org/examples/models/gltf/Flamingo.glb";
+          const url = "./scene.gltf";
           const gltf = await new Promise((resolve) => {
             const loader = new GLTFLoader();
             loader.load(url, (gltf) => {
