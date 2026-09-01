@@ -30,8 +30,13 @@
       </a-assets>
 
       <!-- 光線判定（Raycaster）をマウス・タップに紐付け -->
-      <a-camera position="0 0 0" look-controls="enabled: false" raycaster="objects: .clickable" cursor="fuse: false; rayOrigin: mouse"></a-camera>
-
+     <a-camera 
+  position="0 0 0" 
+  look-controls="enabled: false" 
+  raycaster="objects: .clickable" 
+  cursor="fuse: false; rayOrigin: mouse"
+  device-orientation-permission-ui="enabled: false">
+</a-camera>
       <a-entity mindar-image-target="targetIndex: 0">
         <!-- class="clickable" と click-to-link を両方付与 -->
         <a-plane 
