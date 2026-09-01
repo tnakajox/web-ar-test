@@ -7,16 +7,25 @@
 <title>高島屋 −10歳ミラー</title>
 
 <style>
+
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   background: #111;
   color: white;
-  text-align: center;
   font-family: sans-serif;
+  text-align: center;
 }
 
 h1 {
   margin: 20px 0 5px;
+}
+
+#status {
+  margin: 5px;
 }
 
 #camera {
@@ -42,20 +51,26 @@ canvas {
 }
 
 button {
-  padding: 15px 35px;
+  margin-top: 20px;
+  padding: 16px 35px;
   font-size: 20px;
   border: none;
-  border-radius: 30px;
+  border-radius: 40px;
   cursor: pointer;
 }
+
 </style>
 </head>
+
 
 <body>
 
 <h1>−10歳ミラー</h1>
 
-<p id="status">起動中...</p>
+<div id="status">
+起動中...
+</div>
+
 
 <div id="camera">
 
@@ -65,9 +80,12 @@ button {
     playsinline>
   </video>
 
-  <canvas id="canvas"></canvas>
+  <canvas
+    id="canvas">
+  </canvas>
 
 </div>
+
 
 <button id="beautyButton">
 ✨ 若返る
@@ -95,14 +113,15 @@ const ctx =
 const status =
   document.getElementById("status");
 
+
 let faceLandmarker;
 
 let beautyMode = false;
 
 
-// --------------------------------
+// =====================================
 // MediaPipe
-// --------------------------------
+// =====================================
 
 async function setup() {
 
@@ -113,13 +132,16 @@ async function setup() {
         "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm"
       );
 
+
     faceLandmarker =
       await FaceLandmarker.createFromOptions(
         vision,
         {
           baseOptions: {
+
             modelAssetPath:
               "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task"
+
           },
 
           runningMode: "VIDEO",
@@ -128,10 +150,13 @@ async function setup() {
         }
       );
 
+
     status.textContent =
       "カメラ起動中";
 
+
     startCamera();
+
 
   } catch (error) {
 
@@ -145,20 +170,30 @@ async function setup() {
 }
 
 
-// --------------------------------
+// =====================================
 // カメラ
-// --------------------------------
+// =====================================
 
 async function startCamera() {
 
   const stream =
     await navigator.mediaDevices.getUserMedia({
+
       video: {
-        facingMode: "user"
+
+        facingMode: "user",
+
+        width: 1280,
+
+        height: 720
+
       }
+
     });
 
+
   video.srcObject = stream;
+
 
   video.addEventListener(
     "loadeddata",
@@ -175,13 +210,16 @@ async function startCamera() {
 }
 
 
-// --------------------------------
-// 顔検出
-// --------------------------------
+// =====================================
+// 顔認識
+// =====================================
 
 function detect() {
 
-  if (!faceLandmarker) return;
+  if (!faceLandmarker) {
+    return;
+  }
+
 
   canvas.width =
     video.videoWidth;
@@ -197,7 +235,9 @@ function detect() {
     );
 
 
-  // カメラ映像をcanvasに描く
+  // -----------------------------------
+  // 元映像
+  // -----------------------------------
 
   ctx.clearRect(
     0,
@@ -205,6 +245,7 @@ function detect() {
     canvas.width,
     canvas.height
   );
+
 
   ctx.drawImage(
     video,
@@ -215,89 +256,177 @@ function detect() {
   );
 
 
+  // -----------------------------------
+  // 顔発見
+  // -----------------------------------
+
   if (
-    beautyMode &&
     result.faceLandmarks.length > 0
   ) {
 
     const face =
       result.faceLandmarks[0];
 
-    enlargeEyes(face);
 
     status.textContent =
-      "✨ −10歳モード";
+      beautyMode
+        ? "✨ 若返り中"
+        : "顔を認識しました";
+
+
+    if (beautyMode) {
+
+      beauty(face);
+
+    }
 
   }
-  else if (
-    result.faceLandmarks.length > 0
-  ) {
-
-    status.textContent =
-      "顔を認識しました";
-
-  }
 
 
-  requestAnimationFrame(detect);
+  requestAnimationFrame(
+    detect
+  );
 
 }
 
 
-// --------------------------------
-// 目を大きくする
-// --------------------------------
+// =====================================
+// 美容処理
+// =====================================
 
-function enlargeEyes(face) {
+function beauty(face) {
 
-  // 左目の中心
+  /*
+   * 左目
+   */
 
   const leftEye =
-    getPoint(face, 159, 145);
+    getEyeCenter(
+      face,
+      [
+        33,
+        133,
+        159,
+        145
+      ]
+    );
 
 
-  // 右目の中心
+  /*
+   * 右目
+   */
 
   const rightEye =
-    getPoint(face, 386, 374);
+    getEyeCenter(
+      face,
+      [
+        362,
+        263,
+        386,
+        374
+      ]
+    );
 
 
-  enlargeEye(
+  /*
+   * 目を自然に強調
+   */
+
+  drawEyeEffect(
     leftEye.x,
     leftEye.y,
-    55
+    leftEye.width,
+    leftEye.height
   );
 
-  enlargeEye(
+
+  drawEyeEffect(
     rightEye.x,
     rightEye.y,
-    55
+    rightEye.width,
+    rightEye.height
   );
+
+
+  /*
+   * 美肌
+   */
+
+  skinEffect(face);
 
 }
 
 
-// --------------------------------
-// 2点の中心
-// --------------------------------
+// =====================================
+// 目の中心・サイズ
+// =====================================
 
-function getPoint(
+function getEyeCenter(
   face,
-  index1,
-  index2
+  indexes
 ) {
 
-  const p1 = face[index1];
-  const p2 = face[index2];
+  let minX = 1;
+  let maxX = 0;
+
+  let minY = 1;
+  let maxY = 0;
+
+
+  indexes.forEach(
+    index => {
+
+      const p =
+        face[index];
+
+
+      minX =
+        Math.min(
+          minX,
+          p.x
+        );
+
+
+      maxX =
+        Math.max(
+          maxX,
+          p.x
+        );
+
+
+      minY =
+        Math.min(
+          minY,
+          p.y
+        );
+
+
+      maxY =
+        Math.max(
+          maxY,
+          p.y
+        );
+
+    }
+  );
+
 
   return {
 
     x:
-      ((p1.x + p2.x) / 2)
+      ((minX + maxX) / 2)
       * canvas.width,
 
     y:
-      ((p1.y + p2.y) / 2)
+      ((minY + maxY) / 2)
+      * canvas.height,
+
+    width:
+      (maxX - minX)
+      * canvas.width,
+
+    height:
+      (maxY - minY)
       * canvas.height
 
   };
@@ -305,24 +434,47 @@ function getPoint(
 }
 
 
-// --------------------------------
-// 目を拡大
-// --------------------------------
+// =====================================
+// 目の自然な強調
+// =====================================
 
-function enlargeEye(
+function drawEyeEffect(
   x,
   y,
-  radius
+  width,
+  height
 ) {
+
+  /*
+   * 強くしすぎない
+   */
+
+  const scale =
+    1.08;
+
+
+  const w =
+    width * 2.5;
+
+  const h =
+    height * 3;
+
 
   ctx.save();
 
+
+  /*
+   * 楕円形にマスク
+   */
+
   ctx.beginPath();
 
-  ctx.arc(
+  ctx.ellipse(
     x,
     y,
-    radius,
+    w / 2,
+    h / 2,
+    0,
     0,
     Math.PI * 2
   );
@@ -330,12 +482,9 @@ function enlargeEye(
   ctx.clip();
 
 
-  // 目の周囲を少し拡大
-
-  const scale = 1.20;
-
-  const size =
-    radius * 2;
+  /*
+   * 中心から拡大
+   */
 
   ctx.translate(
     x,
@@ -352,6 +501,7 @@ function enlargeEye(
     -y
   );
 
+
   ctx.drawImage(
     video,
     0,
@@ -360,17 +510,114 @@ function enlargeEye(
     canvas.height
   );
 
+
   ctx.restore();
 
 }
 
 
-// --------------------------------
+// =====================================
+// 美肌
+// =====================================
+
+function skinEffect(face) {
+
+  /*
+   * 顔全体の範囲を取得
+   */
+
+  let minX = 1;
+  let maxX = 0;
+
+  let minY = 1;
+  let maxY = 0;
+
+
+  face.forEach(
+    p => {
+
+      minX =
+        Math.min(
+          minX,
+          p.x
+        );
+
+      maxX =
+        Math.max(
+          maxX,
+          p.x
+        );
+
+      minY =
+        Math.min(
+          minY,
+          p.y
+        );
+
+      maxY =
+        Math.max(
+          maxY,
+          p.y
+        );
+
+    }
+  );
+
+
+  const x =
+    minX * canvas.width;
+
+  const y =
+    minY * canvas.height;
+
+  const w =
+    (maxX - minX)
+    * canvas.width;
+
+  const h =
+    (maxY - minY)
+    * canvas.height;
+
+
+  /*
+   * 顔だけに薄い明るさを加える
+   */
+
+  ctx.save();
+
+  ctx.globalAlpha =
+    0.08;
+
+  ctx.fillStyle =
+    "#fff";
+
+  ctx.beginPath();
+
+  ctx.ellipse(
+    x + w / 2,
+    y + h / 2,
+    w / 2,
+    h / 2,
+    0,
+    0,
+    Math.PI * 2
+  );
+
+  ctx.fill();
+
+  ctx.restore();
+
+}
+
+
+// =====================================
 // ボタン
-// --------------------------------
+// =====================================
 
 document
-  .getElementById("beautyButton")
+  .getElementById(
+    "beautyButton"
+  )
   .addEventListener(
     "click",
     () => {
@@ -378,12 +625,16 @@ document
       beautyMode =
         !beautyMode;
 
+
       document
-        .getElementById("beautyButton")
+        .getElementById(
+          "beautyButton"
+        )
         .textContent =
-          beautyMode
-            ? "✨ 若返りON"
-            : "✨ 若返る";
+
+        beautyMode
+          ? "✨ 若返りON"
+          : "✨ 若返る";
 
     }
   );
