@@ -1,118 +1,47 @@
+<!DOCTYPE html>
 <html>
   <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script type="importmap">
-    {
-      "imports": {
-        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
-        "mindar-face-three": "https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-face-three.prod.js"
-      }
-    }
-    </script>
-    <script type="module">
-      import * as THREE from 'three';
-      import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-      import { MindARThree } from 'mindar-face-three';
-
-      class Avatar {
-        constructor() {
-          this.gltf = null;
-          this.root = null;
-          this.morphTargetMeshes = [];
-        }
-        async init() {
-          const url = "./scene.gltf";
-          const gltf = await new Promise((resolve) => {
-            const loader = new GLTFLoader();
-            loader.load(url, (gltf) => {
-              resolve(gltf);
-            });
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- A-Frame と MindAR のライブラリ読み込み -->
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
+    
+    <script>
+      AFRAME.registerComponent('click-to-link', {
+        init: function () {
+          this.el.addEventListener('click', function () {
+            window.location.href = 'https://isc.iwasaki.ac.jp/';
           });
-          gltf.scene.traverse((object) => {
-            if (object.isBone && !this.root) {
-              this.root = object;
-            }
-            if (!object.isMesh) return;
-            const mesh = object;
-            if (!mesh.morphTargetDictionary || !mesh.morphTargetInfluences) return;
-            this.morphTargetMeshes.push(mesh);
-          });
-          this.gltf = gltf;
         }
-        updateBlendshapes(blendshapes) {
-          if (!blendshapes || !blendshapes.categories) return;
-          const categories = blendshapes.categories;
-          let coefsMap = new Map();
-          for (let i = 0; i < categories.length; ++i) {
-            coefsMap.set(categories[i].categoryName, categories[i].score);
-          }
-          for (const mesh of this.morphTargetMeshes) {
-            if (!mesh.morphTargetDictionary || !mesh.morphTargetInfluences) {
-              continue;
-            }
-            for (const [name, value] of coefsMap) {
-              if (!Object.keys(mesh.morphTargetDictionary).includes(name)) {
-                continue;
-              }
-              const idx = mesh.morphTargetDictionary[name];
-              mesh.morphTargetInfluences[idx] = value;
-            }
-          }
-        }
-      }
-
-      let mindarThree = null;
-      let avatar = null;
-
-      const setup = async () => {
-        mindarThree = new MindARThree({
-          container: document.querySelector("#container"),
-        });
-        const { renderer, scene, camera } = mindarThree;
-        const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
-        scene.add(light);
-        
-        const anchor = mindarThree.addAnchor(1);
-        
-        avatar = new Avatar();
-        await avatar.init();
-        avatar.gltf.scene.scale.set(1, 1, 1);
-        anchor.group.add(avatar.gltf.scene);
-      };
-
-      const start = async () => {
-        if (!mindarThree) {
-          await setup();
-        }
-        await mindarThree.start();
-        const { renderer, scene, camera } = mindarThree;
-
-        renderer.setAnimationLoop(() => {
-          const estimate = mindarThree.getLatestEstimate();
-          if (estimate && estimate.blendshapes && avatar) {
-            avatar.updateBlendshapes(estimate.blendshapes);
-          }
-          renderer.render(scene, camera);
-        });
-      };
-
-      start();
+      });
     </script>
-    <style>
-      body {
-        margin: 0;
-        overflow: hidden;
-      }
-      #container {
-        width: 100vw;
-        height: 100vh;
-        position: relative;
-        overflow: hidden;
-      }
-    </style>
   </head>
   <body>
-    <div id="container"></div>
+    <a-scene 
+      mindar-image="imageTargetSrc: ./marker.mind;" 
+      color-space="sRGB" 
+      renderer="colorManagement: true, physicallyCorrectLights" 
+      vr-mode-ui="enabled: false" 
+      device-orientation-permission-ui="enabled: false">
+      
+      <a-assets>
+        <!-- 表示させたい3Dモデルなどを指定 -->
+        <a-asset-item id="avatarModel" src="./marker.jpg"></a-asset-item>
+      </a-assets>
+
+      <a-camera position="0 0 0" look-controls="enabled: false" raycaster="objects: .clickable" cursor="fuse: false; rayOrigin: mouse"></a-camera>
+
+      <a-entity mindar-image-target="targetIndex: 0">
+        <!-- 浮き出るオブジェクト（タップ可能） -->
+        <a-gltf-model 
+          class="clickable"
+          click-to-link
+          src="#avatarModel" 
+          position="0 0 0" 
+          scale="0.5 0.5 0.5" 
+          rotation="0 0 0">
+        </a-gltf-model>
+      </a-entity>
+    </a-scene>
   </body>
 </html>
