@@ -2,7 +2,6 @@
 <html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- A-Frame と MindAR のライブラリ読み込み -->
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
     
@@ -18,29 +17,30 @@
   </head>
   <body>
     <a-scene 
-      mindar-image="imageTargetSrc: ./targets.mind;" 
+      mindar-image="imageTargetSrc: ./tafgets.mind;" 
       color-space="sRGB" 
-      renderer="colorManagement: true, physicallyCorrectLights" 
+      renderer="colorManagement: true" 
       vr-mode-ui="enabled: false" 
       device-orientation-permission-ui="enabled: false">
       
       <a-assets>
-        <!-- 表示させたい3Dモデルなどを指定 -->
-        <a-asset-item id="avatarModel" src="./marker.jpg"></a-asset-item>
+        <!-- 表示させたいJPG画像を指定 -->
+        <img id="myJpgImage" src="./marker.jpg">
       </a-assets>
 
       <a-camera position="0 0 0" look-controls="enabled: false" raycaster="objects: .clickable" cursor="fuse: false; rayOrigin: mouse"></a-camera>
 
       <a-entity mindar-image-target="targetIndex: 0">
-        <!-- 浮き出るオブジェクト（タップ可能） -->
-        <a-gltf-model 
+        <!-- 平面（a-plane）にJPG画像を貼り付けて表示 -->
+        <a-plane 
           class="clickable"
           click-to-link
-          src="#avatarModel" 
+          src="#myJpgImage" 
           position="0 0 0" 
-          scale="0.5 0.5 0.5" 
+          height="1" 
+          width="1" 
           rotation="0 0 0">
-        </a-gltf-model>
+        </a-plane>
       </a-entity>
     </a-scene>
   </body>
