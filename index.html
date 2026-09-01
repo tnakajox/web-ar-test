@@ -10,14 +10,28 @@
         init: function () {
           const el = this.el;
           const sceneEl = el.sceneEl;
+          let isTargetVisible = false;
+
+          // ターゲット認識中かどうかをフラグで管理
+          const targetEntity = el.parentEl; // mindar-image-target を持つ親entity
+          targetEntity.addEventListener('targetFound', () => {
+            isTargetVisible = true;
+          });
+          targetEntity.addEventListener('targetLost', () => {
+            isTargetVisible = false;
+          });
 
           const handleTap = (evt) => {
+            if (!isTargetVisible) return; // 認識してない間は判定しない
+
             const camera = sceneEl.camera;
             if (!camera) return;
 
+            const mesh = el.getObject3D('mesh');
+            if (!mesh) return; // meshが未生成なら何もしない
+
             const raycaster = new THREE.Raycaster();
 
-            // タッチ優先、なければマウス座標を使う
             let clientX, clientY;
             if (evt.changedTouches && evt.changedTouches.length > 0) {
               clientX = evt.changedTouches[0].clientX;
@@ -33,9 +47,8 @@
             );
 
             raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObject(el.object3D, true);
+            const intersects = raycaster.intersectObject(mesh, true);
 
-            // デバッグ用ログ(動作確認できたら削除してOK)
             console.log('tap detected, intersects:', intersects.length);
 
             if (intersects.length > 0) {
@@ -43,11 +56,16 @@
             }
           };
 
-          // canvasが生成されるまで少し待ってからリスナー登録
-          sceneEl.addEventListener('renderstart', () => {
+          // シーンが完全にロードされてからリスナー登録
+          if (sceneEl.hasLoaded) {
             sceneEl.canvas.addEventListener('touchend', handleTap, false);
             sceneEl.canvas.addEventListener('click', handleTap, false);
-          });
+          } else {
+            sceneEl.addEventListener('loaded', () => {
+              sceneEl.canvas.addEventListener('touchend', handleTap, false);
+              sceneEl.canvas.addEventListener('click', handleTap, false);
+            });
+          }
         }
       });
     </script>
@@ -61,4 +79,25 @@
       device-orientation-permission-ui="enabled: false">
 
       <a-assets>
-        <img id="myJpgImage"
+        <img id="myJpgImage" src="./marker.jpg">
+      </a-assets>
+
+      <a-camera
+        position="0 0 0"
+        look-controls="enabled: false">
+      </a-camera>
+
+      <a-entity mindar-image-target="targetIndex: 0">
+        <a-plane
+          class="clickable"
+          click-to-link
+          src="#myJpgImage"
+          position="0 0 0.3"
+          height="1"
+          width="1"
+          rotation="0 0 0">
+        </a-plane>
+      </a-entity>
+    </a-scene>
+  </body>
+</html>
