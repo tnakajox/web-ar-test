@@ -8,7 +8,9 @@
     <script>
       AFRAME.registerComponent('click-to-link', {
         init: function () {
-          this.el.addEventListener('click', function () {
+          const el = this.el;
+          // タップ（クリック）されたら遷移
+          el.addEventListener('click', function () {
             window.location.href = 'https://isc.iwasaki.ac.jp/';
           });
         }
@@ -24,19 +26,19 @@
       device-orientation-permission-ui="enabled: false">
       
       <a-assets>
-        <!-- 表示させたいJPG画像を指定 -->
         <img id="myJpgImage" src="./marker.jpg">
       </a-assets>
 
+      <!-- 光線判定（Raycaster）をマウス・タップに紐付け -->
       <a-camera position="0 0 0" look-controls="enabled: false" raycaster="objects: .clickable" cursor="fuse: false; rayOrigin: mouse"></a-camera>
 
       <a-entity mindar-image-target="targetIndex: 0">
-        <!-- 平面（a-plane）にJPG画像を貼り付けて表示 -->
+        <!-- class="clickable" と click-to-link を両方付与 -->
         <a-plane 
           class="clickable"
           click-to-link
           src="#myJpgImage" 
-          position="0 0 0" 
+          position="0 0 0.1" 
           height="1" 
           width="1" 
           rotation="0 0 0">
