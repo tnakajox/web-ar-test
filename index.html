@@ -4,51 +4,61 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
-    
+
     <script>
       AFRAME.registerComponent('click-to-link', {
         init: function () {
           const el = this.el;
-          // タップ（クリック）されたら遷移
-          el.addEventListener('click', function () {
-            window.location.href = 'https://isc.iwasaki.ac.jp/';
+          const sceneEl = el.sceneEl;
+
+          const handleTap = (evt) => {
+            const camera = sceneEl.camera;
+            if (!camera) return;
+
+            const raycaster = new THREE.Raycaster();
+
+            // タッチ優先、なければマウス座標を使う
+            let clientX, clientY;
+            if (evt.changedTouches && evt.changedTouches.length > 0) {
+              clientX = evt.changedTouches[0].clientX;
+              clientY = evt.changedTouches[0].clientY;
+            } else {
+              clientX = evt.clientX;
+              clientY = evt.clientY;
+            }
+
+            const mouse = new THREE.Vector2(
+              (clientX / window.innerWidth) * 2 - 1,
+              -(clientY / window.innerHeight) * 2 + 1
+            );
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObject(el.object3D, true);
+
+            // デバッグ用ログ(動作確認できたら削除してOK)
+            console.log('tap detected, intersects:', intersects.length);
+
+            if (intersects.length > 0) {
+              window.location.href = 'https://isc.iwasaki.ac.jp/';
+            }
+          };
+
+          // canvasが生成されるまで少し待ってからリスナー登録
+          sceneEl.addEventListener('renderstart', () => {
+            sceneEl.canvas.addEventListener('touchend', handleTap, false);
+            sceneEl.canvas.addEventListener('click', handleTap, false);
           });
         }
       });
     </script>
   </head>
   <body>
-    <a-scene 
-      mindar-image="imageTargetSrc: ./targets.mind;" 
-      color-space="sRGB" 
-      renderer="colorManagement: true" 
-      vr-mode-ui="enabled: false" 
+    <a-scene
+      mindar-image="imageTargetSrc: ./targets.mind;"
+      color-space="sRGB"
+      renderer="colorManagement: true"
+      vr-mode-ui="enabled: false"
       device-orientation-permission-ui="enabled: false">
-      
-      <a-assets>
-        <img id="myJpgImage" src="./marker.jpg">
-      </a-assets>
 
-      <!-- 光線判定（Raycaster）をマウス・タップに紐付け -->
-     <a-camera 
-  position="0 0 0" 
-  look-controls="enabled: false" 
-  raycaster="objects: .clickable" 
-  cursor="fuse: false; rayOrigin: mouse"
-  device-orientation-permission-ui="enabled: false">
-</a-camera>
-      <a-entity mindar-image-target="targetIndex: 0">
-        <!-- class="clickable" と click-to-link を両方付与 -->
-        <a-plane 
-          class="clickable"
-          click-to-link
-          src="#myJpgImage" 
-          position="0 0 0.3" 
-          height="1" 
-          width="1" 
-          rotation="0 0 0">
-        </a-plane>
-      </a-entity>
-    </a-scene>
-  </body>
-</html>
+      <a-assets>
+        <img id="myJpgImage"
