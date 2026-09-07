@@ -6,40 +6,27 @@
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
 
     <script>
+      // タップしてリンクに飛ぶ機能（そのまま維持）
       AFRAME.registerComponent('click-to-link', {
         init: function () {
           const el = this.el;
           const sceneEl = el.sceneEl;
           let isTargetVisible = false;
 
-          // ターゲット認識中かどうかをフラグで管理
-          const targetEntity = el.parentEl; // mindar-image-target を持つ親entity
-          targetEntity.addEventListener('targetFound', () => {
-            isTargetVisible = true;
-          });
-          targetEntity.addEventListener('targetLost', () => {
-            isTargetVisible = false;
-          });
+          const targetEntity = el.parentEl;
+          targetEntity.addEventListener('targetFound', () => { isTargetVisible = true; });
+          targetEntity.addEventListener('targetLost', () => { isTargetVisible = false; });
 
           const handleTap = (evt) => {
-            if (!isTargetVisible) return; // 認識してない間は判定しない
-
+            if (!isTargetVisible) return;
             const camera = sceneEl.camera;
             if (!camera) return;
-
             const mesh = el.getObject3D('mesh');
-            if (!mesh) return; // meshが未生成なら何もしない
+            if (!mesh) return;
 
             const raycaster = new THREE.Raycaster();
-
-            let clientX, clientY;
-            if (evt.changedTouches && evt.changedTouches.length > 0) {
-              clientX = evt.changedTouches[0].clientX;
-              clientY = evt.changedTouches[0].clientY;
-            } else {
-              clientX = evt.clientX;
-              clientY = evt.clientY;
-            }
+            let clientX = evt.changedTouches ? evt.changedTouches[0].clientX : evt.clientX;
+            let clientY = evt.changedTouches ? evt.changedTouches[0].clientY : evt.clientY;
 
             const mouse = new THREE.Vector2(
               (clientX / window.innerWidth) * 2 - 1,
@@ -49,14 +36,11 @@
             raycaster.setFromCamera(mouse, camera);
             const intersects = raycaster.intersectObject(mesh, true);
 
-            console.log('tap detected, intersects:', intersects.length);
-
             if (intersects.length > 0) {
               window.location.href = 'https://isc.iwasaki.ac.jp/';
             }
           };
 
-          // シーンが完全にロードされてからリスナー登録
           if (sceneEl.hasLoaded) {
             sceneEl.canvas.addEventListener('touchend', handleTap, false);
             sceneEl.canvas.addEventListener('click', handleTap, false);
@@ -82,20 +66,23 @@
         <img id="myJpgImage" src="./marker.jpg">
       </a-assets>
 
-      <a-camera
-        position="0 0 0"
-        look-controls="enabled: false">
-      </a-camera>
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
       <a-entity mindar-image-target="targetIndex: 0">
-        <a-plane
+        <!-- 面白味をプラスしたエフェクト付きの平面 -->
+    <a-plane
           class="clickable"
           click-to-link
-          src="#myJpgImage"
-          position="0 0 0.3"
+          src="./your_image.png"
+          material="transparent: true"
+          position="0 0 0.5" 
           height="1"
           width="1"
-          rotation="0 0 0">
+          rotation="0 0 0"
+          
+          animation__scale="property: scale; from: 0.1 0.1 0.1; to: 1 1 1; dur: 800; easing: easeOutElastic; startEvents: targetFound"
+          animation__float="property: position; to: 0 0.1 0.5; dir: alternate; dur: 1500; loop: true; easing: easeInOutSine"
+          animation__spin="property: rotation; to: 0 360 0; dur: 10000; loop: true; easing: linear">
         </a-plane>
       </a-entity>
     </a-scene>
