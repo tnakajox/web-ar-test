@@ -6,7 +6,7 @@
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
 
     <script>
-      // タップしてリンクに飛ぶ機能（そのまま維持）
+      // タップしてリンクに飛ぶ機能
       AFRAME.registerComponent('click-to-link', {
         init: function () {
           const el = this.el;
@@ -69,8 +69,8 @@
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
       <a-entity mindar-image-target="targetIndex: 0">
-        <!-- 面白味をプラスしたエフェクト付きの平面 -->
-    <a-plane
+        <!-- startEvents を削除し、マーカーに乗った瞬間に自然に現れるように修正 -->
+        <a-plane
           class="clickable"
           click-to-link
           src="./marker.png"
@@ -80,7 +80,7 @@
           width="1"
           rotation="0 0 0"
           
-          animation__scale="property: scale; from: 0.1 0.1 0.1; to: 1 1 1; dur: 800; easing: easeOutElastic; startEvents: targetFound"
+          animation__scale="property: scale; from: 0.1 0.1 0.1; to: 1 1 1; dur: 800; easing: easeOutElastic;"
           animation__float="property: position; to: 0 0.1 0.5; dir: alternate; dur: 1500; loop: true; easing: easeInOutSine"
           animation__spin="property: rotation; to: 0 360 0; dur: 10000; loop: true; easing: linear">
         </a-plane>
