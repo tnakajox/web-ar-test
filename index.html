@@ -68,8 +68,8 @@
 
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-      <a-entity mindar-image-target="targetIndex: 0">
-        <!-- startEvents を削除し、マーカーに乗った瞬間に自然に現れるように修正 -->
+     <a-entity mindar-image-target="targetIndex: 0">
+        <!-- メインの画像 -->
         <a-plane
           class="clickable"
           click-to-link
@@ -79,11 +79,19 @@
           height="1"
           width="1"
           rotation="0 0 0"
-          
           animation__scale="property: scale; from: 0.1 0.1 0.1; to: 1 1 1; dur: 800; easing: easeOutElastic;"
-          animation__float="property: position; to: 0 0.1 0.5; dir: alternate; dur: 1500; loop: true; easing: easeInOutSine"
-          animation__spin="property: rotation; to: 0 360 0; dur: 10000; loop: true; easing: linear">
+          animation__float="property: position; to: 0 0.1 0.5; dir: alternate; dur: 1500; loop: true; easing: easeInOutSine">
         </a-plane>
+
+        <!-- すぐ下に配置する「ここを押してね」のテキスト -->
+        <a-text
+          value=">>> Tap Here! <<<"
+          align="center"
+          position="0 -0.6 0.5"
+          scale="0.8 0.8 0.8"
+          color="#FF0000"
+          animation__blink="property: visible; from: true; to: false; dur: 500; loop: true; dir: alternate">
+        </a-text>
       </a-entity>
     </a-scene>
   </body>
