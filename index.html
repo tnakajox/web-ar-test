@@ -70,27 +70,36 @@
 
      <a-entity mindar-image-target="targetIndex: 0">
         <!-- メインの画像 -->
-        <a-plane
+   <a-plane
           class="clickable"
           click-to-link
           src="./marker.png"
-          material="transparent: true"
+          material="transparent: true; opacity: 1;"
           position="0 0 0.5" 
           height="1"
           width="1"
           rotation="0 0 0"
-          animation__scale="property: scale; from: 0.1 0.1 0.1; to: 1 1 1; dur: 800; easing: easeOutElastic;"
-          animation__float="property: position; to: 0 0.1 0.5; dir: alternate; dur: 1500; loop: true; easing: easeInOutSine">
+          
+          animation__fade="property: material.opacity; from: 0; to: 1; dur: 1200; easing: easeOutQuad"
+          animation__slide="property: position; from: 0 -0.3 0.5; to: 0 0 0.5; dur: 1200; easing: easeOutBack"
+          animation__float="property: position; from: 0 0 0.5; to: 0 0.1 0.5; dir: alternate; dur: 1500; loop: true; easing: easeInOutSine; delay: 1200">
         </a-plane>
 
         <!-- すぐ下に配置する「ここを押してね」のテキスト -->
-       <!-- すぐ下に配置する「ここを押してね」のテキスト（脈打つアニメーション） -->
+       <!-- すぐ下に配置する「ここを押してね」のテキスト（脈打つアニメーション） 
         <a-text
-          value=">>> Tap Here! <<<"
+          value="↑ Tap Here! ↑"
           align="center"
           position="0 -0.6 0.5"
-          color="#FF0000"
+          color="#FFF"
           animation__pulse="property: scale; from: 0.8 0.8 0.8; to: 1.2 1.2 1.2; dir: alternate; dur: 600; loop: true; easing: easeInOutSine">
+        </a-text>
+       -->
+        <a-text
+          value="↑ Tap Here! ↑"
+          align="center"
+          position="0 -0.6 0.5"
+          color="#FFF">
         </a-text>
       </a-entity>
     </a-scene>
