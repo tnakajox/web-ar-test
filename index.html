@@ -84,13 +84,13 @@
         </a-plane>
 
         <!-- すぐ下に配置する「ここを押してね」のテキスト -->
+       <!-- すぐ下に配置する「ここを押してね」のテキスト（脈打つアニメーション） -->
         <a-text
           value=">>> Tap Here! <<<"
           align="center"
           position="0 -0.6 0.5"
-          scale="0.8 0.8 0.8"
           color="#FF0000"
-          animation__blink="property: visible; from: true; to: false; dur: 500; loop: true; dir: alternate">
+          animation__pulse="property: scale; from: 0.8 0.8 0.8; to: 1.2 1.2 1.2; dir: alternate; dur: 600; loop: true; easing: easeInOutSine">
         </a-text>
       </a-entity>
     </a-scene>
